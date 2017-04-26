@@ -6,14 +6,19 @@ import android.content.Intent;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.Adapter;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.Checkable;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -31,10 +36,12 @@ import static android.R.attr.isDefault;
 
 
 public class MainActivity extends AppCompatActivity {
+    list_layout itemView;
     static int count=0;
     CheckBox cb;
     ListView listView;
-
+    static boolean btnIsChoosed = false;
+    EditText et;
     ArrayList<Matzip> matzip_list = new ArrayList<>();
     MatzipAdapter adapter;
 
@@ -46,6 +53,31 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         setListView();
+        et = (EditText)findViewById(R.id.editText);
+        et.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                String search = s.toString();
+                if(search.length() > 0) {
+                    listView.setFilterText(search);
+                }
+                else {
+                    listView.clearTextFilter();
+                }
+            }
+        });
+
+
 
 
 
@@ -85,10 +117,33 @@ public class MainActivity extends AppCompatActivity {
         }
 
         else if(v.getId()==R.id.btnChoose) {
+//            LinearLayout list_layout = (LinearLayout) View.inflate(MainActivity.this, R.layout.list_layout, null);
+            Button button = (Button) findViewById(R.id.btnChoose);
+            CheckBox cb = (CheckBox) findViewById(R.id.checkBox);
 
-            LinearLayout list_layout =(LinearLayout) View.inflate(MainActivity.this ,R.layout.list_layout,null);
-            Button button = (Button)findViewById(R.id.btnChoose);
-            button.setText("삭제");
+
+
+            if(btnIsChoosed == false) {
+
+                if( adapter.isEmpty() == true) return;
+//                adapter.setCheckBoxVisibility();
+
+                cb.setVisibility(View.VISIBLE);
+
+                listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
+                button.setText("삭제");
+                btnIsChoosed = true;
+            }
+                else {
+                if( adapter.isEmpty() == true) return;
+
+                cb.setVisibility(View.GONE);
+                listView.setChoiceMode(AbsListView.CHOICE_MODE_NONE);
+                button.setText("선택");
+                btnIsChoosed = false;
+                }
+
+
         }
     }
 
@@ -102,13 +157,8 @@ public class MainActivity extends AppCompatActivity {
 
 //        LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 //        LinearLayout list_view = (LinearLayout) inflater.inflate(R.layout.list_layout,null);
-        adapter.setVisible(null);
-//        cb =  (CheckBox) list_view.findViewById(R.id.checkBox);
-//        cb.setVisibility(View.VISIBLE);
-        listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
 
         listView.setAdapter(adapter);
-
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -151,11 +201,8 @@ public class MainActivity extends AppCompatActivity {
             if(resultCode == RESULT_OK){
                 Matzip m;
                 m = data.getParcelableExtra("remakemsg");
-                tv = (TextView)findViewById(R.id.tv);
-
                 matzip_list.add(count,m);
                 int size = matzip_list.size();
-                tv.setText("맛집 리스트(" +size+"개)");
                 count++;
 
                 adapter.notifyDataSetChanged();

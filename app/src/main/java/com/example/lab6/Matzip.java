@@ -10,7 +10,7 @@ import android.view.View;
  */
 
 public class Matzip implements Parcelable {
-     String name;
+    public String name;
      String call_num;
      int menu_kind;
      String menu1;
@@ -31,6 +31,10 @@ public class Matzip implements Parcelable {
         this.menu3 = menu3;
 
 
+    }
+    public String getName() {
+        String name = this.name;
+        return name;
     }
 
     protected Matzip(Parcel in) {

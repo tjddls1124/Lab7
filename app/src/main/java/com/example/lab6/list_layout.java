@@ -9,6 +9,7 @@ import android.widget.LinearLayout;
  */
 
 public class list_layout extends LinearLayout implements Checkable {
+
     public list_layout(Context context) {
         super(context);
     }
