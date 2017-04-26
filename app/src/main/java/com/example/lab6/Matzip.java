@@ -18,6 +18,7 @@ public class Matzip implements Parcelable {
      String menu3;
      String homepage;
      String enroll_date;
+     boolean isCheckable;
 
 
     public Matzip(String name, String call_num, int menu_kind, String menu1, String menu2, String menu3, String homepage, String enroll_date) {
@@ -29,6 +30,7 @@ public class Matzip implements Parcelable {
         this.menu1 = menu1;
         this.menu2 = menu2;
         this.menu3 = menu3;
+        boolean isCheckable = false;
 
 
     }

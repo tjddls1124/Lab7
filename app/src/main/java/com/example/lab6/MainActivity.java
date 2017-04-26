@@ -8,6 +8,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -36,13 +37,13 @@ import static android.R.attr.isDefault;
 
 
 public class MainActivity extends AppCompatActivity {
-    list_layout itemView;
     static int count=0;
-    CheckBox cb;
     ListView listView;
     static boolean btnIsChoosed = false;
     EditText et;
     ArrayList<Matzip> matzip_list = new ArrayList<>();
+
+
     MatzipAdapter adapter;
 
     int REQUEST_MSG_CODE = 1;
@@ -53,6 +54,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         setListView();
+        listView = (ListView)findViewById(R.id.listview);
         et = (EditText)findViewById(R.id.editText);
         et.addTextChangedListener(new TextWatcher() {
             @Override
@@ -118,7 +120,7 @@ public class MainActivity extends AppCompatActivity {
 
         else if(v.getId()==R.id.btnChoose) {
 //            LinearLayout list_layout = (LinearLayout) View.inflate(MainActivity.this, R.layout.list_layout, null);
-            Button button = (Button) findViewById(R.id.btnChoose);
+            final Button button = (Button) findViewById(R.id.btnChoose);
             CheckBox cb = (CheckBox) findViewById(R.id.checkBox);
 
 
@@ -126,9 +128,7 @@ public class MainActivity extends AppCompatActivity {
             if(btnIsChoosed == false) {
 
                 if( adapter.isEmpty() == true) return;
-//                adapter.setCheckBoxVisibility();
-
-                cb.setVisibility(View.VISIBLE);
+                adapter.setCheckBoxVisible();
 
                 listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
                 button.setText("삭제");
@@ -137,10 +137,46 @@ public class MainActivity extends AppCompatActivity {
                 else {
                 if( adapter.isEmpty() == true) return;
 
-                cb.setVisibility(View.GONE);
-                listView.setChoiceMode(AbsListView.CHOICE_MODE_NONE);
-                button.setText("선택");
-                btnIsChoosed = false;
+
+                AlertDialog.Builder dlg = new AlertDialog.Builder(MainActivity.this);
+                dlg.setTitle("삭제확인");
+                dlg.setIcon(R.mipmap.ic_launcher);
+                dlg.setMessage("선택한 맛집정보를 삭제하시겠습니까?");
+                dlg.setNegativeButton("삭제", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                        CheckBox cb;
+                        for (int i = matzip_list.size() - 1 ; i >=0 ; i--) {
+                            cb = (CheckBox)( listView.getChildAt(i).findViewById(R.id.checkBox) );
+                            if ( cb.isChecked() == true ) {
+                                cb.setChecked(false);
+                                matzip_list.remove(i);
+                            }
+                            listView.clearChoices();
+                            adapter.notifyDataSetChanged();
+                            adapter.setCheckBoxGone();
+                            listView.setChoiceMode(AbsListView.CHOICE_MODE_NONE);
+                            button.setText("선택");
+                            btnIsChoosed = false;
+                        }
+
+
+                    }
+                });
+                dlg.setPositiveButton("취소", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        adapter.notifyDataSetChanged();
+                        adapter.setCheckBoxGone();
+                        listView.setChoiceMode(AbsListView.CHOICE_MODE_NONE);
+                        button.setText("선택");
+                        btnIsChoosed = false;
+                    }
+                });
+
+                dlg.show();
+
                 }
 
 
@@ -182,7 +218,6 @@ public class MainActivity extends AppCompatActivity {
                     public void onClick(DialogInterface dialog, int which) {
                         matzip_list.remove(position);
                         adapter.notifyDataSetChanged();
-                        count--;
                     }
                 });
                 dlg.setPositiveButton("취소", null);
@@ -201,9 +236,8 @@ public class MainActivity extends AppCompatActivity {
             if(resultCode == RESULT_OK){
                 Matzip m;
                 m = data.getParcelableExtra("remakemsg");
-                matzip_list.add(count,m);
+                matzip_list.add(m);
                 int size = matzip_list.size();
-                count++;
 
                 adapter.notifyDataSetChanged();
             }

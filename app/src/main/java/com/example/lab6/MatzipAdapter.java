@@ -29,28 +29,32 @@ import java.util.ArrayList;
 
 public class MatzipAdapter extends BaseAdapter implements Filterable{
     ArrayList<Matzip> data = new ArrayList<Matzip>();
-    private ArrayList<Matzip> filteredItemList = data ;
+    private ArrayList<Matzip> oriData = data ;
     Context context;
     Filter listFilter;
 
     public MatzipAdapter(ArrayList<Matzip> data, Context context)
     {
         this.data = data;
+        this.oriData = data;
         this.context = context;
     }
 
-    public void setCheckBoxVisibility() {
+    public void setCheckBoxVisible() {
 
-        for(int i =0; i<data.size() ; i++) {
-            View view = LayoutInflater.from(context).inflate(R.layout.list_layout,null);
-            CheckBox cb;
-            cb = (CheckBox)view.findViewById(R.id.checkBox);
-            cb.setVisibility(View.VISIBLE);
-        }
+
+            for(int i =0; i<data.size() ; i++)
+            data.get(i).isCheckable = true;
+            notifyDataSetChanged();
     }
+    public void setCheckBoxGone(){
+        for(int i =0; i<data.size() ; i++)
+            data.get(i).isCheckable = false;
+        notifyDataSetChanged();
+    }
+
+
     public void setSearchData(String s){
-        ArrayList<Matzip> backuphMatzipList = new ArrayList<>();
-        backuphMatzipList.addAll(data);
         if(s.length() > 0 ) {
             for (int i = 0; i < data.size(); i++) {
                 if (!data.get(i).name.contains(s)) {
@@ -60,12 +64,12 @@ public class MatzipAdapter extends BaseAdapter implements Filterable{
             }
             notifyDataSetChanged();
         }
-        else {
-            for(int i =0; i < backuphMatzipList.size() ; i++) data.add(backuphMatzipList.get(i));
-            notifyDataSetChanged();
-        }
-
     }
+    public void resetData(ArrayList<Matzip> m){
+        this.data = m;
+        notifyDataSetChanged();
+    }
+
 
     @Override
     public int getCount() {
@@ -100,46 +104,13 @@ public class MatzipAdapter extends BaseAdapter implements Filterable{
         else if(data.get(position).menu_kind==2) imageView.setImageResource(R.drawable.piz);
         else if (data.get(position).menu_kind==3) imageView.setImageResource(R.drawable.ham);
 
+        if(data.get(position).isCheckable == true) cb.setVisibility(View.VISIBLE);
+        else cb.setVisibility(View.GONE);
+
         return convertView;
     }
 
-    private class ListFilter extends Filter {
 
-        @Override
-        protected FilterResults performFiltering(CharSequence constraint) {
-            FilterResults results = new FilterResults() ;
-
-            if (constraint == null || constraint.length() == 0) {
-                results.values = data ;
-                results.count = data.size() ;
-            } else {
-                ArrayList<Matzip> itemList = new ArrayList<Matzip>() ;
-
-                for (Matzip item : data) {
-                    if (item.getName().toUpperCase().contains(constraint.toString().toUpperCase()) )
-                    {
-                        itemList.add(item) ;
-                    }
-                }
-
-                results.values = itemList ;
-                results.count = itemList.size() ;
-            }
-            return results;
-        }
-
-        @Override
-        protected void publishResults(CharSequence constraint, FilterResults results) {
-
-            filteredItemList = (ArrayList<Matzip>) results.values ;
-
-            if (results.count > 0) {
-                notifyDataSetChanged() ;
-            } else {
-                notifyDataSetInvalidated() ;
-            }
-        }
-    }
 
     @Override
     public Filter getFilter() {
@@ -150,4 +121,44 @@ public class MatzipAdapter extends BaseAdapter implements Filterable{
 
 
     }
+    private class ListFilter extends Filter{
+
+        @Override
+        protected FilterResults performFiltering(CharSequence constraint) {
+            FilterResults results = new FilterResults();
+            if(constraint == null || constraint.length() ==0){
+                results.values = oriData;
+                results.count = oriData.size();
+            }
+            else {
+                ArrayList<Matzip> itemList = new ArrayList<>();
+                for(Matzip item : oriData){
+                    if( item.getName().toUpperCase().contains(constraint.toString().toUpperCase()) )
+                        itemList.add(item);
+                }
+                results.values = itemList;
+                results.count = itemList.size();
+            }
+
+            return results;
+        }
+
+        @Override
+        protected void publishResults(CharSequence constraint, FilterResults results) {
+
+            data = (ArrayList<Matzip>) results.values;
+            if(results.count>0) {
+                notifyDataSetChanged();
+            }
+            else{
+                notifyDataSetInvalidated();
+        }
+    }
+
+
+
+
+    }
+
+
 }
